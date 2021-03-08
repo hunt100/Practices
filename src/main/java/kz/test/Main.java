@@ -21,7 +21,7 @@ public class Main {
         while (canContinue()) {
             getTurn(scanner);
             printGameField();
-            if (isWinnerFounded()) {
+            if (isWinnerFounded() != 0) {
                 return;
             }
         }
