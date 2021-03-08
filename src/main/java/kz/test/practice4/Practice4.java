@@ -11,9 +11,9 @@ public final class Practice4 {
     private static final char O_SYMBOL = 'O';
     private static char[][] gameField;
     private static final int GRID_SIZE = 3; //5
-    private static final int SCORE_TO_WIN = 3; //4
     private static boolean isXTurn;
     private static int[] scoreArray;
+    private static final int MAX_DEPTH = 6;
 
     private Practice4() {
         throw new IllegalStateException("Practice 4 is a util task");
@@ -82,7 +82,8 @@ public final class Practice4 {
     }
 
     private static void makeComputerTurn() {
-        makeDummyComputerTurn();
+//        makeDummyComputerTurn();
+        makeBestMove();
         isXTurn = true;
     }
 
@@ -110,12 +111,14 @@ public final class Practice4 {
     }
 
     public static int isWinnerFounded() {
+        return isWinnerFounded(scoreArray);
+    }
+
+    public static int isWinnerFounded(int[] scoreArray) {
         for (int j : scoreArray) {
-            if (j == SCORE_TO_WIN) {
-                System.out.println("X win");
+            if (j == GRID_SIZE) {
                 return 1;
-            } else if (j == -SCORE_TO_WIN) {
-                System.out.println("O win");
+            } else if (j == -GRID_SIZE) {
                 return -1;
             }
         }
@@ -123,6 +126,10 @@ public final class Practice4 {
     }
 
     private static void addToScoreArray(int i, int j) {
+        addToScoreArray(scoreArray, i, j, isXTurn);
+    }
+
+    private static void addToScoreArray(int[] scoreArray, int i, int j, boolean isXTurn) {
         final int currentPoint = isXTurn ? 1 : -1;
         scoreArray[i] += currentPoint;
         scoreArray[GRID_SIZE + j] += currentPoint;
@@ -132,5 +139,77 @@ public final class Practice4 {
         if (GRID_SIZE - 1 - j == i) {
             scoreArray[2 * GRID_SIZE + 1] += currentPoint;
         }
+    }
+
+    private static void makeBestMove() {
+        int bestValue = Integer.MAX_VALUE;
+        int xPos = -1;
+        int yPos = -1;
+        for (int i = 0; i < GRID_SIZE; i++) {
+            for (int j = 0; j < GRID_SIZE; j++) {
+                if (isValidCell(i, j)) {
+                    gameField[i][j] = O_SYMBOL;
+                    int currentValue = miniMax(gameField, MAX_DEPTH - 1, true);
+                    gameField[i][j] = EMPTY_SYMBOL;
+                    if (currentValue < bestValue) {
+                        bestValue = currentValue;
+                        xPos = i;
+                        yPos = j;
+                    }
+                }
+            }
+        }
+        gameField[xPos][yPos] = O_SYMBOL;
+        addToScoreArray(xPos, yPos);
+    }
+
+    private static int miniMax(char[][] gameCopy, int maxDepth, boolean isMax) {
+        int score = evaluateGameField(gameCopy);
+
+        if (Math.abs(score) == 1 || !canContinue() || maxDepth == 0) {
+            return score;
+        }
+
+        int best;
+        if (isMax) {
+            best = Integer.MIN_VALUE;
+            for (int i = 0; i < GRID_SIZE; i++) {
+                for (int j = 0; j < GRID_SIZE; j++) {
+                    if (isValidCell(i, j)) {
+                        gameCopy[i][j] = X_SYMBOL;
+                        best = Math.max(best, miniMax(gameCopy, maxDepth - 1, false));
+                        gameCopy[i][j] = EMPTY_SYMBOL;
+                    }
+                }
+            }
+        }
+        else {
+            best = Integer.MAX_VALUE;
+            for (int i = 0; i < GRID_SIZE; i++) {
+                for (int j = 0; j < GRID_SIZE; j++) {
+                    if (isValidCell(i, j)) {
+                        gameCopy[i][j] = O_SYMBOL;
+                        best = Math.min(best, miniMax(gameCopy, maxDepth - 1, true));
+                        gameCopy[i][j] = EMPTY_SYMBOL;
+                    }
+                }
+            }
+        }
+        return best;
+    }
+
+    private static int evaluateGameField(char[][] gameField) {
+        int[] scoreCopy = new int[scoreArray.length];
+        for (int i = 0; i < GRID_SIZE; i++) {
+            for (int j = 0; j < GRID_SIZE; j++) {
+                if (gameField[i][j] == X_SYMBOL) {
+                    addToScoreArray(scoreCopy, i, j, true);
+                }
+                if (gameField[i][j] == O_SYMBOL) {
+                    addToScoreArray(scoreCopy, i, j, false);
+                }
+            }
+        }
+        return isWinnerFounded(scoreCopy);
     }
 }

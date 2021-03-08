@@ -18,12 +18,16 @@ public class Main {
     }
 
     public static void runSingleRound(Scanner scanner) {
+        String winMessage;
         while (canContinue()) {
             getTurn(scanner);
             printGameField();
             if (isWinnerFounded() != 0) {
+                winMessage = isWinnerFounded() == 1 ? "X win" : "O win";
+                System.out.println(winMessage);
                 return;
             }
         }
+
     }
 }
