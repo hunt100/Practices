@@ -1,6 +1,6 @@
-package kz.test;
+package kz.calculator;
 
-import kz.test.gui.MainWindow;
+import kz.calculator.gui.MainWindow;
 
 public class Main {
 
